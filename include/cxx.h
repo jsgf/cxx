@@ -8,6 +8,7 @@
 #include <initializer_list>
 #include <iosfwd>
 #include <iterator>
+#include <memory>
 #include <new>
 #include <stdexcept>
 #include <string>
@@ -413,6 +414,32 @@ public:
   ~Opaque() = delete;
 };
 #endif // CXXBRIDGE1_RUST_OPAQUE
+
+#ifndef CXXBRIDGE1_RUST_SHARED
+#define CXXBRIDGE1_RUST_SHARED
+// Helper to construct a type into a std::shared_ptr.
+template <typename T, typename... Targs>
+std::shared_ptr<T> make_shared(Targs... args) {
+  return std::make_shared<T>(args...);
+}
+
+// Unsafe function to give a Pin<&mut T> from a SharedPtr<T>.
+template <typename T>
+T& shared_as_mutable(std::shared_ptr<T> const &ptr) {
+  return *ptr;
+}
+#endif // CXXBRIDGE1_RUST_SHARED
+
+#ifndef CXXBRIDGE1_RUST_UNIQUE
+#define CXXBRIDGE1_RUST_UNIQUE
+#if __cplusplus >= 201402L // c++14
+// Helper to construct a type into a std::unique_ptr.
+template <typename T, typename... Targs>
+std::unique_ptr<T> make_unique(Targs... args) {
+  return std::make_unique<T>(args...);
+}
+#endif // c++14
+#endif // CXXBRIDGE1_RUST_UNIQUE
 
 template <typename T>
 std::size_t size_of();
